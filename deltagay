@@ -1,6 +1,10 @@
+-- Enhanced FakeBan GUI Script with Full Input Lock
+
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
+local ContextActionService = game:GetService("ContextActionService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -19,20 +23,40 @@ blur.Size = 100
 blur.Parent = Lighting
 
 -- ScreenGui
-local gui = Instance.new("ScreenGui", playerGui)
+local gui = Instance.new("ScreenGui")
 gui.Name = "FakeBanGui"
 gui.IgnoreGuiInset = true
 gui.DisplayOrder = 999
 gui.ResetOnSpawn = false
+gui.Parent = playerGui
 
--- Full Blackout Layer (darker background)
+-- Input blocker (for clicks outside GUI)
+local blocker = Instance.new("TextButton")
+blocker.Size = UDim2.new(1, 0, 1, 0)
+blocker.Position = UDim2.new(0, 0, 0, 0)
+blocker.BackgroundTransparency = 1
+blocker.Text = ""
+blocker.ZIndex = 100
+blocker.Modal = true
+blocker.Parent = gui
+
+-- Full Blackout Layer
 local blackout = Instance.new("Frame", gui)
 blackout.Size = UDim2.new(1, 0, 1, 0)
 blackout.Position = UDim2.new(0, 0, 0, 0)
 blackout.BackgroundColor3 = Color3.new(0, 0, 0)
-blackout.BackgroundTransparency = 0.1 -- Lower number = darker screen
+blackout.BackgroundTransparency = 0.05
 blackout.ZIndex = 0
 
+-- Disable all CoreGui elements
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+
+-- Disable all player controls
+local function blockAllActions(actionName, inputState, inputObj)
+	return Enum.ContextActionResult.Sink
+end
+ContextActionService:BindAction("BlockAllInputs", blockAllActions, false,
+	unpack(Enum.PlayerActions:GetEnumItems()))
 
 -- Main window
 local container = Instance.new("Frame", gui)
@@ -42,7 +66,6 @@ container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 container.ZIndex = 1
 Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
 
--- Shadow glow
 local shadow = Instance.new("ImageLabel", container)
 shadow.Size = UDim2.new(1, 20, 1, 20)
 shadow.Position = UDim2.new(0, -10, 0, -10)
@@ -53,7 +76,6 @@ shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 shadow.ZIndex = 0
 
--- Title
 local title = Instance.new("TextLabel", container)
 title.Text = "Disconnected"
 title.Size = UDim2.new(1, 0, 0.15, 0)
@@ -63,7 +85,6 @@ title.TextColor3 = Color3.fromRGB(255, 80, 80)
 title.TextScaled = true
 title.ZIndex = 2
 
--- Message
 local message = Instance.new("TextLabel", container)
 message.Text = "You have been removed from the experience.\n\nReason: Use of Delta executor is prohibited.\n\n(Error Code: 267)"
 message.Size = UDim2.new(1, -30, 0.45, 0)
@@ -76,7 +97,6 @@ message.TextWrapped = true
 message.TextYAlignment = Enum.TextYAlignment.Top
 message.ZIndex = 2
 
--- Leave button
 local leaveBtn = Instance.new("TextButton", container)
 leaveBtn.Text = "Leave"
 leaveBtn.Size = UDim2.new(0.4, 0, 0.15, 0)
@@ -88,7 +108,6 @@ leaveBtn.TextScaled = true
 leaveBtn.ZIndex = 2
 Instance.new("UICorner", leaveBtn).CornerRadius = UDim.new(0, 8)
 
--- See Trusted Executors button
 local trustedBtn = Instance.new("TextButton", container)
 trustedBtn.Text = "See Trusted Executors"
 trustedBtn.Size = UDim2.new(0.6, 0, 0.12, 0)
@@ -100,7 +119,6 @@ trustedBtn.TextScaled = true
 trustedBtn.ZIndex = 2
 Instance.new("UICorner", trustedBtn).CornerRadius = UDim.new(0, 8)
 
--- Trusted Executors page
 local execFrame = Instance.new("Frame", gui)
 execFrame.Visible = false
 execFrame.Size = container.Size
@@ -140,8 +158,6 @@ for i, info in ipairs(executors) do
 
 	b.MouseButton1Click:Connect(function()
 		setclipboard(url)
-
-		-- Custom Center Notification
 		local notif = Instance.new("TextLabel", gui)
 		notif.Size = UDim2.new(0.3, 0, 0.1, 0)
 		notif.Position = UDim2.new(0.35, 0, 0.45, 0)
@@ -162,7 +178,6 @@ for i, info in ipairs(executors) do
 		glow.Thickness = 2
 		glow.Transparency = 0.25
 
-		-- Fade and destroy after 3 sec
 		task.delay(3, function()
 			for i = 0, 1, 0.05 do
 				notif.TextTransparency = i
@@ -175,7 +190,6 @@ for i, info in ipairs(executors) do
 	end)
 end
 
--- Back button
 local backBtn = Instance.new("TextButton", execFrame)
 backBtn.Text = "Back"
 backBtn.Size = UDim2.new(0.3, 0, 0.12, 0)
@@ -187,9 +201,10 @@ backBtn.TextScaled = true
 backBtn.ZIndex = 4
 Instance.new("UICorner", backBtn).CornerRadius = UDim.new(0, 8)
 
--- Button logic
 leaveBtn.MouseButton1Click:Connect(function()
 	if blur then blur:Destroy() end
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
+	ContextActionService:UnbindAction("BlockAllInputs")
 	player:Kick("You have left the game.")
 end)
 
