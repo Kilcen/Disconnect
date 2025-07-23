@@ -150,19 +150,11 @@ for i, info in ipairs(executors) do
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
 
 	b.MouseButton1Click:Connect(function()
-		setclipboard(url)
-
-		-- Notification
-		local notif = Instance.new("TextLabel", gui)
-		notif.Size = UDim2.new(0.3, 0, 0.1, 0)
-		notif.Position = UDim2.new(0.35, 0, 0.45, 0)
+		local executorName = identifyexecutor and identifyexecutor() or "Unknown"
+		local notif = Instance.new("Frame", gui)
+		notif.Size = UDim2.new(0.35, 0, 0.16, 0)
+		notif.Position = UDim2.new(0.325, 0, 0.42, 0)
 		notif.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-		notif.TextColor3 = Color3.fromRGB(0, 255, 127)
-		notif.Text = "✅ Link copied!\nPaste it on your browser."
-		notif.Font = Enum.Font.GothamBold
-		notif.TextScaled = true
-		notif.TextWrapped = true
-		notif.BackgroundTransparency = 0
 		notif.ZIndex = 1004
 
 		local corner = Instance.new("UICorner", notif)
@@ -173,11 +165,53 @@ for i, info in ipairs(executors) do
 		glow.Thickness = 2
 		glow.Transparency = 0.25
 
-		task.delay(3, function()
+		if executorName ~= "Delta" and setclipboard then
+			setclipboard(url)
+
+			local msg = Instance.new("TextLabel", notif)
+			msg.Size = UDim2.new(1, -20, 1, -20)
+			msg.Position = UDim2.new(0, 10, 0, 10)
+			msg.BackgroundTransparency = 1
+			msg.TextColor3 = Color3.fromRGB(0, 255, 127)
+			msg.Text = "✅ Link copied!\nPaste it on your browser."
+			msg.Font = Enum.Font.GothamBold
+			msg.TextScaled = true
+			msg.TextWrapped = true
+			msg.ZIndex = 1005
+		else
+			local infoText = Instance.new("TextLabel", notif)
+			infoText.Text = "🔗 Copy this manually:"
+			infoText.Size = UDim2.new(1, 0, 0.4, 0)
+			infoText.Position = UDim2.new(0, 0, 0, 0)
+			infoText.BackgroundTransparency = 1
+			infoText.TextColor3 = Color3.fromRGB(255, 255, 255)
+			infoText.Font = Enum.Font.Gotham
+			infoText.TextScaled = true
+			infoText.ZIndex = 1005
+
+			local linkBox = Instance.new("TextBox", notif)
+			linkBox.Text = url
+			linkBox.Size = UDim2.new(0.9, 0, 0.4, 0)
+			linkBox.Position = UDim2.new(0.05, 0, 0.5, 0)
+			linkBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+			linkBox.TextColor3 = Color3.fromRGB(0, 255, 127)
+			linkBox.Font = Enum.Font.Gotham
+			linkBox.TextScaled = true
+			linkBox.ClearTextOnFocus = false
+			linkBox.ZIndex = 1005
+			Instance.new("UICorner", linkBox).CornerRadius = UDim.new(0, 6)
+		end
+
+		-- Fade out after 5 seconds
+		task.delay(5, function()
 			for i = 0, 1, 0.05 do
-				notif.TextTransparency = i
 				notif.BackgroundTransparency = i
 				glow.Transparency = i
+				for _, obj in ipairs(notif:GetChildren()) do
+					if obj:IsA("TextLabel") or obj:IsA("TextBox") then
+						obj.TextTransparency = i
+					end
+				end
 				task.wait(0.03)
 			end
 			notif:Destroy()
@@ -185,7 +219,7 @@ for i, info in ipairs(executors) do
 	end)
 end
 
--- Back Button
+-- Back Button (now correctly placed AFTER the loop)
 local backBtn = Instance.new("TextButton", execFrame)
 backBtn.Text = "Back"
 backBtn.Size = UDim2.new(0.3, 0, 0.12, 0)
