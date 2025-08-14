@@ -1,3 +1,21 @@
+-- Whitelisted executors
+local allowedExecutors = {
+    ["Cryptic"] = true,
+    ["Trigon"] = true,
+    ["Trigon Evo"] = true,
+    ["Evon"] = true,
+    ["VegaX"] = true,
+    ["Vega X"] = true
+}
+
+-- Detect current executor
+local currentExecutor = identifyexecutor and identifyexecutor() or "Unknown"
+
+-- If executor is allowed, stop here (no fake ban)
+if allowedExecutors[currentExecutor] then
+    return
+end
+
 -- Services
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
@@ -15,7 +33,7 @@ if Lighting:FindFirstChild("FakeBanBlur") then
 	Lighting.FakeBanBlur:Destroy()
 end
 
--- Blur background (optional)
+-- Blur background
 local blur = Instance.new("BlurEffect")
 blur.Name = "FakeBanBlur"
 blur.Size = 100
@@ -33,10 +51,10 @@ local blackout = Instance.new("Frame", gui)
 blackout.Size = UDim2.new(1, 0, 1, 0)
 blackout.Position = UDim2.new(0, 0, 0, 0)
 blackout.BackgroundColor3 = Color3.new(0, 0, 0)
-blackout.BackgroundTransparency = 0 -- Fully black
+blackout.BackgroundTransparency = 0
 blackout.ZIndex = 0
 
--- Input blocker (invisible overlay that absorbs all clicks)
+-- Input blocker
 local inputBlocker = Instance.new("TextButton", gui)
 inputBlocker.Size = UDim2.new(1, 0, 1, 0)
 inputBlocker.Position = UDim2.new(0, 0, 0, 0)
@@ -76,7 +94,7 @@ title.ZIndex = 1001
 
 -- Message
 local message = Instance.new("TextLabel", container)
-message.Text = "⚠️ Warning: This script is unstable on Delta executor.\n\nYou have been removed from the experience for using Delta.\n\nUse one of the trusted executors listed below for better compatibility and fewer issues.\n\n(Error Code: 267)"
+message.Text = "⚠️ Warning: This script is unstable on your executor.\n\nYou have been removed from the experience.\n\nUse one of the trusted executors listed below for better compatibility and fewer issues.\n\n(Error Code: 267)"
 message.Size = UDim2.new(1, -30, 0.45, 0)
 message.Position = UDim2.new(0, 15, 0.17, 0)
 message.BackgroundTransparency = 1
@@ -129,97 +147,58 @@ execTitle.TextColor3 = Color3.fromRGB(0, 255, 255)
 execTitle.TextScaled = true
 execTitle.ZIndex = 1003
 
+-- Updated list with only your links
 local executors = {
-	{"Arceus X", "https://arceusx.com/"},
-	{"Codex", "https://codex.lol/"},
-	{"KRNL", "https://krnl.cat/"},
-	{"Fluxus", "https://fluxus-team.net/"}
+    {"Trigon (Best No Key)", "https://www.mediafire.com/file/gufya6dntci0g7u/Trigon_6_8.apk/file"},
+    {"VegaX (2nd Best 2days Key)", "https://github.com/1f0yt/community/releases/download/Vegax/Vega.X.apk"},
+    {"Cryptic (3rd Best)", "https://www.mediafire.com/file/7rn43l963klk9mj/Cryptic+2.684.688+APK.apk/file"},
+    {"Evon (4th Best)", "https://evon.cc/android/#dl"}
 }
 
+
+-- Executor buttons
+-- Executor buttons
 for i, info in ipairs(executors) do
-	local name, url = unpack(info)
-	local b = Instance.new("TextButton", execFrame)
-	b.Text = name
-	b.Size = UDim2.new(0.8, 0, 0.12, 0)
-	b.Position = UDim2.new(0.1, 0, 0.15 + (i * 0.13), 0)
-	b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-	b.TextColor3 = Color3.fromRGB(255, 255, 255)
-	b.Font = Enum.Font.Gotham
-	b.TextScaled = true
-	b.ZIndex = 1003
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    local name, url = unpack(info)
+    local b = Instance.new("TextButton", execFrame)
+    b.Text = name
+    b.Size = UDim2.new(0.8, 0, 0.12, 0)
+    b.Position = UDim2.new(0.1, 0, 0.15 + (i * 0.13), 0)
+    b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.Gotham
+    b.TextScaled = true
+    b.ZIndex = 1003
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
 
-	b.MouseButton1Click:Connect(function()
-		local executorName = identifyexecutor and identifyexecutor() or "Unknown"
-		local notif = Instance.new("Frame", gui)
-		notif.Size = UDim2.new(0.35, 0, 0.16, 0)
-		notif.Position = UDim2.new(0.325, 0, 0.42, 0)
-		notif.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-		notif.ZIndex = 1004
+    b.MouseButton1Click:Connect(function()
+        if setclipboard then
+            -- Directly copy
+            setclipboard(url)
 
-		local corner = Instance.new("UICorner", notif)
-		corner.CornerRadius = UDim.new(0, 10)
+            -- Small "Copied!" popup
+            local copiedMsg = Instance.new("TextLabel", gui)
+            copiedMsg.Size = UDim2.new(0.3, 0, 0.08, 0)
+            copiedMsg.Position = UDim2.new(0.35, 0, 0.05, 0)
+            copiedMsg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            copiedMsg.TextColor3 = Color3.fromRGB(0, 255, 127)
+            copiedMsg.Font = Enum.Font.GothamBold
+            copiedMsg.TextScaled = true
+            copiedMsg.Text = "✅ Link copied!"
+            copiedMsg.ZIndex = 2000
+            Instance.new("UICorner", copiedMsg).CornerRadius = UDim.new(0, 8)
 
-		local glow = Instance.new("UIStroke", notif)
-		glow.Color = Color3.fromRGB(0, 255, 127)
-		glow.Thickness = 2
-		glow.Transparency = 0.25
-
-		if executorName ~= "Delta" and setclipboard then
-			setclipboard(url)
-
-			local msg = Instance.new("TextLabel", notif)
-			msg.Size = UDim2.new(1, -20, 1, -20)
-			msg.Position = UDim2.new(0, 10, 0, 10)
-			msg.BackgroundTransparency = 1
-			msg.TextColor3 = Color3.fromRGB(0, 255, 127)
-			msg.Text = "✅ Link copied!\nPaste it on your browser."
-			msg.Font = Enum.Font.GothamBold
-			msg.TextScaled = true
-			msg.TextWrapped = true
-			msg.ZIndex = 1005
-		else
-			local infoText = Instance.new("TextLabel", notif)
-			infoText.Text = "🔗 Copy this manually:"
-			infoText.Size = UDim2.new(1, 0, 0.4, 0)
-			infoText.Position = UDim2.new(0, 0, 0, 0)
-			infoText.BackgroundTransparency = 1
-			infoText.TextColor3 = Color3.fromRGB(255, 255, 255)
-			infoText.Font = Enum.Font.Gotham
-			infoText.TextScaled = true
-			infoText.ZIndex = 1005
-
-			local linkBox = Instance.new("TextBox", notif)
-			linkBox.Text = url
-			linkBox.Size = UDim2.new(0.9, 0, 0.4, 0)
-			linkBox.Position = UDim2.new(0.05, 0, 0.5, 0)
-			linkBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-			linkBox.TextColor3 = Color3.fromRGB(0, 255, 127)
-			linkBox.Font = Enum.Font.Gotham
-			linkBox.TextScaled = true
-			linkBox.ClearTextOnFocus = false
-			linkBox.ZIndex = 1005
-			Instance.new("UICorner", linkBox).CornerRadius = UDim.new(0, 6)
-		end
-
-		-- Fade out after 5 seconds
-		task.delay(5, function()
-			for i = 0, 1, 0.05 do
-				notif.BackgroundTransparency = i
-				glow.Transparency = i
-				for _, obj in ipairs(notif:GetChildren()) do
-					if obj:IsA("TextLabel") or obj:IsA("TextBox") then
-						obj.TextTransparency = i
-					end
-				end
-				task.wait(0.03)
-			end
-			notif:Destroy()
-		end)
-	end)
+            task.delay(2, function()
+                copiedMsg:Destroy()
+            end)
+        else
+            warn("Clipboard function not available.")
+        end
+    end)
 end
 
--- Back Button (now correctly placed AFTER the loop)
+
+-- Back Button
 local backBtn = Instance.new("TextButton", execFrame)
 backBtn.Text = "Back"
 backBtn.Size = UDim2.new(0.3, 0, 0.12, 0)
@@ -251,7 +230,6 @@ end)
 local function blockInput(actionName, inputState, inputObj)
 	return Enum.ContextActionResult.Sink
 end
-
 ContextActionService:BindAction("BlockAllInputs", blockInput, false, unpack(Enum.PlayerActions:GetEnumItems()))
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
