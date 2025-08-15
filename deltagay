@@ -129,73 +129,120 @@ trustedBtn.TextScaled = true
 trustedBtn.ZIndex = 1001
 Instance.new("UICorner", trustedBtn).CornerRadius = UDim.new(0, 8)
 
+
 -- Trusted Executors Frame
 local execFrame = Instance.new("Frame", gui)
 execFrame.Visible = false
-execFrame.Size = container.Size
-execFrame.Position = container.Position
-execFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+execFrame.Size = UDim2.new(0.45, 0, 0.55, 0)
+execFrame.Position = UDim2.new(0.275, 0, 0.225, 0)
+execFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 execFrame.ZIndex = 1002
-Instance.new("UICorner", execFrame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", execFrame).CornerRadius = UDim.new(0, 16)
 
+-- Shadow
+local execShadow = Instance.new("ImageLabel", execFrame)
+execShadow.Size = UDim2.new(1, 30, 1, 30)
+execShadow.Position = UDim2.new(0, -15, 0, -15)
+execShadow.BackgroundTransparency = 1
+execShadow.Image = "rbxassetid://1316045217"
+execShadow.ImageTransparency = 0.5
+execShadow.ScaleType = Enum.ScaleType.Slice
+execShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+execShadow.ZIndex = 1001
+
+-- Title
 local execTitle = Instance.new("TextLabel", execFrame)
 execTitle.Text = "Trusted Executors"
-execTitle.Size = UDim2.new(1, 0, 0.15, 0)
+execTitle.Size = UDim2.new(1, 0, 0.12, 0)
 execTitle.BackgroundTransparency = 1
 execTitle.Font = Enum.Font.GothamBold
 execTitle.TextColor3 = Color3.fromRGB(0, 255, 255)
 execTitle.TextScaled = true
 execTitle.ZIndex = 1003
 
--- Updated list with only your links
+-- Scrollable container for buttons
+local scroll = Instance.new("ScrollingFrame", execFrame)
+scroll.Size = UDim2.new(1, -20, 0.7, 0)
+scroll.Position = UDim2.new(0, 10, 0.15, 0)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+scroll.ZIndex = 1003
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+-- Executor list
 local executors = {
     {"Trigon (Best No Key)", "https://www.mediafire.com/file/gufya6dntci0g7u/Trigon_6_8.apk/file"},
     {"VegaX (2nd Best 2days Key)", "https://github.com/1f0yt/community/releases/download/Vegax/Vega.X.apk"},
     {"Cryptic (3rd Best)", "https://www.mediafire.com/file/7rn43l963klk9mj/Cryptic+2.684.688+APK.apk/file"},
-    {"Evon (4th Best)", "https://evon.cc/android/#dl"}
+    {"Evon (4th Best)", "https://evon.cc/android/#dl"},
+    {"📺 Tutorial for downloading Trigon", "https://www.youtube.com/watch?v=s4PWKtPIet8"}
 }
 
-
--- Executor buttons
--- Executor buttons
+local buttonHeight = 40
 for i, info in ipairs(executors) do
     local name, url = unpack(info)
-    local b = Instance.new("TextButton", execFrame)
+    local b = Instance.new("TextButton", scroll)
     b.Text = name
-    b.Size = UDim2.new(0.8, 0, 0.12, 0)
-    b.Position = UDim2.new(0.1, 0, 0.15 + (i * 0.13), 0)
+    b.Size = UDim2.new(1, -10, 0, buttonHeight)
+    b.Position = UDim2.new(0, 5, 0, (i - 1) * (buttonHeight + 6))
     b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     b.TextColor3 = Color3.fromRGB(255, 255, 255)
     b.Font = Enum.Font.Gotham
-    b.TextScaled = true
+    b.TextSize = 16
     b.ZIndex = 1003
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
 
-    b.MouseButton1Click:Connect(function()
-        if setclipboard then
-            -- Directly copy
-            setclipboard(url)
+ b.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(url)
 
-            -- Small "Copied!" popup
-            local copiedMsg = Instance.new("TextLabel", gui)
-            copiedMsg.Size = UDim2.new(0.3, 0, 0.08, 0)
-            copiedMsg.Position = UDim2.new(0.35, 0, 0.05, 0)
-            copiedMsg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            copiedMsg.TextColor3 = Color3.fromRGB(0, 255, 127)
-            copiedMsg.Font = Enum.Font.GothamBold
-            copiedMsg.TextScaled = true
-            copiedMsg.Text = "✅ Link copied!"
-            copiedMsg.ZIndex = 2000
-            Instance.new("UICorner", copiedMsg).CornerRadius = UDim.new(0, 8)
+        -- Popup message in center
+        local copiedMsg = Instance.new("TextLabel", gui)
+        copiedMsg.Size = UDim2.new(0.4, 0, 0.1, 0)
+        copiedMsg.Position = UDim2.new(0.3, 0, 0.45, 0)
+        copiedMsg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        copiedMsg.TextColor3 = Color3.fromRGB(0, 255, 127)
+        copiedMsg.Font = Enum.Font.GothamBold
+        copiedMsg.TextScaled = true
+        copiedMsg.Text = "📋 Link copied! Paste it into your browser"
+        copiedMsg.ZIndex = 2000
+        copiedMsg.BackgroundTransparency = 0
+        Instance.new("UICorner", copiedMsg).CornerRadius = UDim.new(0, 12)
 
-            task.delay(2, function()
-                copiedMsg:Destroy()
-            end)
-        else
-            warn("Clipboard function not available.")
-        end
-    end)
+        -- Smooth fade-out after 5 seconds
+        task.delay(5, function()
+            for i = 0, 1, 0.1 do
+                copiedMsg.BackgroundTransparency = i
+                copiedMsg.TextTransparency = i
+                task.wait(0.05)
+            end
+            copiedMsg:Destroy()
+        end)
+    else
+        warn("Clipboard function not available.")
+    end
+end)
+
 end
+
+scroll.CanvasSize = UDim2.new(0, 0, 0, #executors * (buttonHeight + 6))
+
+-- Back Button
+local backBtn = Instance.new("TextButton", execFrame)
+backBtn.Text = "Back"
+backBtn.Size = UDim2.new(0.3, 0, 0.1, 0)
+backBtn.Position = UDim2.new(0.35, 0, 0.88, 0)
+backBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+backBtn.TextColor3 = Color3.new(1, 1, 1)
+backBtn.Font = Enum.Font.GothamBold
+backBtn.TextScaled = true
+backBtn.ZIndex = 1003
+Instance.new("UICorner", backBtn).CornerRadius = UDim.new(0, 8)
+
+backBtn.MouseButton1Click:Connect(function()
+    execFrame.Visible = false
+    container.Visible = true
+end)
 
 
 -- Back Button
